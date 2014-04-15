@@ -31,6 +31,8 @@
 define(function (require, exports, module) {
     "use strict";
     
+    var FileSystem = require("filesystem/FileSystem");
+
     /**
      * Appends a <style> tag to the document's head.
      *
@@ -91,7 +93,9 @@ define(function (require, exports, module) {
                 rootpath: dir
             };
 
-            if (PathUtils.isAbsoluteUrl(url)) {
+            // PathUtils.isAbsoluteUrl is required for windows platform
+            // FileSystem.isAbsolutePath is required for linux/mac platform
+            if (PathUtils.isAbsoluteUrl(url) || FileSystem.isAbsolutePath(url)) {
                 options.currentFileInfo = {
                     currentDirectory: dir,
                     entryPath: dir,
@@ -161,7 +165,7 @@ define(function (require, exports, module) {
      * @return {!$.Promise} A promise object that is resolved with the contents of the requested file
      **/
     function loadFile(module, path) {
-        var url     = PathUtils.isAbsoluteUrl(path) ? path : getModuleUrl(module, path),
+        var url     = PathUtils.isAbsoluteUrl(path) || FileSystem.isAbsolutePath(path) ? path : getModuleUrl(module, path),
             promise = $.get(url);
 
         return promise;
