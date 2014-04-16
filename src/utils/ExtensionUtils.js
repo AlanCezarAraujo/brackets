@@ -69,6 +69,15 @@ define(function (require, exports, module) {
     }
 
     /**
+     * This methods checks both 'isAbsolute' variants as
+     * sometimes we get a 'file://path...' (on win platform)
+     * and in other cases we get a '/home...' (on linux/mac)
+     */
+    function isAbsolutePathOrUrl(str) {
+        return PathUtils.isAbsoluteUrl(str) || FileSystem.isAbsolutePath(str);
+    }
+
+    /**
      * Parses LESS code and returns a promise that resolves with plain CSS code.
      *
      * Pass the {@link url} argument to resolve relative URLs contained in the code.
@@ -93,9 +102,7 @@ define(function (require, exports, module) {
                 rootpath: dir
             };
 
-            // PathUtils.isAbsoluteUrl is required for windows platform
-            // FileSystem.isAbsolutePath is required for linux/mac platform
-            if (PathUtils.isAbsoluteUrl(url) || FileSystem.isAbsolutePath(url)) {
+            if (isAbsolutePathOrUrl(url)) {
                 options.currentFileInfo = {
                     currentDirectory: dir,
                     entryPath: dir,
@@ -165,7 +172,7 @@ define(function (require, exports, module) {
      * @return {!$.Promise} A promise object that is resolved with the contents of the requested file
      **/
     function loadFile(module, path) {
-        var url     = PathUtils.isAbsoluteUrl(path) || FileSystem.isAbsolutePath(path) ? path : getModuleUrl(module, path),
+        var url     = isAbsolutePathOrUrl(path) ? path : getModuleUrl(module, path),
             promise = $.get(url);
 
         return promise;
